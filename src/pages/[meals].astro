@@ -1,49 +1,54 @@
 ---
- import "../styles/global.css";
- import Layout from "../layouts/Layout.astro";
- import Meal from "../components/Meal.astro";
- import Back from "../components/Back.astro";
- 
- export async function getStaticPaths() {
-   // Fetch all categories to pre-generate pages
-   const categoryRes = await fetch("https://www.themealdb.com/api/json/v1/1/categories.php");
-   const categoryData = await categoryRes.json();
- 
-   return categoryData.categories.map((category) => ({
-     params: { meals: category.strCategory }, // Generates /Beef, /Seafood, etc.
-   }));
- }
- 
- // Get the category from the route parameter
- const { meals } = Astro.params;
- 
- // Fetch meals for the specified category
- const response = await fetch(`https://www.themealdb.com/api/json/v1/1/filter.php?c=${meals}`);
- const data = await response.json();
- 
- interface Meal {
-   strMeal: string;
-   strMealThumb: string;
-   idMeal: string;
- }
+import "../styles/global.css";
+import Layout from "../layouts/Layout.astro";
+import Meal from "../components/Meal.astro";
+import Back from "../components/Back.astro";
+
+export async function getStaticPaths() {
+  // Fetch all categories to pre-generate pages
+  const categoryRes = await fetch(
+    "https://www.themealdb.com/api/json/v1/1/categories.php",
+  );
+  const categoryData = await categoryRes.json();
+
+  return categoryData.categories.map((category) => ({
+    params: { meals: category.strCategory }, // Generates /Beef, /Seafood, etc.
+  }));
+}
+
+// Get the category from the route parameter
+const { meals } = Astro.params;
+
+// Fetch meals for the specified category
+const response = await fetch(
+  `https://www.themealdb.com/api/json/v1/1/filter.php?c=${meals}`,
+);
+const data = await response.json();
+
+interface Meal {
+  strMeal: string;
+  strMealThumb: string;
+  idMeal: string;
+}
 ---
- 
- <Layout title="Tasty Venus">
-   <div>
-     <h1 class="text-3xl font-bold text-center pt-10">
-       Welcome to Tasty Venus {meals} Dishes 
-     </h1>
-     <Back/>
-     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-5">
-       {data.meals?.map((meal: Meal) => ( 
-         <Meal 
-           key={meal.strMeal} 
-           name={meal.strMeal}
-           picSource={meal.strMealThumb} 
-         />
-       ))}
-     </div>
-     {data.meals?.length > 11 ? <Back /> : null}
-   </div>
- </Layout>
- 
+
+<Layout title="Tasty Venus">
+  <div>
+    <h1 class="text-3xl font-bold text-center pt-10">
+      Welcome to Tasty Venus {meals} Dishes
+    </h1>
+    <Back />
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-5">
+      {
+        data.meals?.map((meal: Meal) => (
+          <Meal
+            key={meal.strMeal}
+            name={meal.strMeal}
+            picSource={meal.strMealThumb}
+          />
+        ))
+      }
+    </div>
+    {data.meals?.length > 11 ? <Back /> : null}
+  </div>
+</Layout>
