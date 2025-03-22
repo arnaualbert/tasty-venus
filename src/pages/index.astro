@@ -1,11 +1,33 @@
 ---
-import Welcome from '../components/Welcome.astro';
-import Layout from '../layouts/Layout.astro';
+import "../styles/global.css";
+import Layout from "../layouts/Layout.astro";
+import Category from "../components/Category.astro"
+const response = await fetch("https://www.themealdb.com/api/json/v1/1/categories.php");
+const data = await response.json()
+interface Category {
+  idCategory: string;
+  strCategory: string;
+  strCategoryThumb: string;
+  strCategoryDescription: string;
+}
 
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
 ---
-
-<Layout>
-	<Welcome />
+<Layout title="Tasty Venus">
+  <div>
+    <h1 class="text-3xl font-bold text-center pt-10">
+      Welcome to Tasty Venus
+    </h1>
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-5">
+      {
+        data["categories"].map((categorie: Category) =>( 
+        <Category 
+        key={categorie.idCategory} 
+        picSource={categorie.strCategoryThumb} 
+        category={categorie.strCategory} 
+        description={categorie.strCategoryDescription}/>
+      ))
+      }
+    </div>
+  </div>
 </Layout>
+
