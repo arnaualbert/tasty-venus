@@ -14,10 +14,11 @@ interface Category {
 ---
 <Layout title="Tasty Venus">
   <div>
-    <h1 class="text-3xl font-bold text-center pt-10">
+    <h1 class="text-3xl font-bold text-center pt-10 italic">
       Welcome to Tasty Venus
     </h1>
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-5">
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-5">
       {
         data["categories"].map((categorie: Category) =>( 
         <Category 

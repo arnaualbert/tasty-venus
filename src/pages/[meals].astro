@@ -10,21 +10,18 @@ export async function getStaticPaths() {
     "https://www.themealdb.com/api/json/v1/1/categories.php",
   );
   const categoryData = await categoryRes.json();
-
-  return categoryData.categories.map((category) => ({
+  return categoryData.categories.map((category: {strCategory: string}) => ({
     params: { meals: category.strCategory }, // Generates /Beef, /Seafood, etc.
   }));
 }
 
-// Get the category from the route parameter
 const { meals } = Astro.params;
 
-// Fetch meals for the specified category
 const response = await fetch(
   `https://www.themealdb.com/api/json/v1/1/filter.php?c=${meals}`,
 );
 const data = await response.json();
-
+data.meals?.map((meal: Meal)=>(console.log(meal.idMeal)))
 interface Meal {
   strMeal: string;
   strMealThumb: string;
@@ -42,9 +39,10 @@ interface Meal {
       {
         data.meals?.map((meal: Meal) => (
           <Meal
-            key={meal.strMeal}
+            key={meal.idMeal}
             name={meal.strMeal}
             picSource={meal.strMealThumb}
+            idMeal={meal.idMeal}
           />
         ))
       }

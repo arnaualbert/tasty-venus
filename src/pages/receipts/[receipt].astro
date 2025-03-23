@@ -1,0 +1,115 @@
+---
+import "../../styles/global.css";
+import Layout from "../../layouts/Layout.astro";
+import Back from "../../components/Back.astro";
+
+export async function getStaticPaths() {
+    // Fetch all categories
+    const categoryRes = await fetch("https://www.themealdb.com/api/json/v1/1/categories.php");
+    const categoryData = await categoryRes.json();
+
+    // Extract category names
+    const categoryMeals = categoryData.categories.map(
+        (category: { strCategory: string }) => category.strCategory // No need for array wrapping []
+    );
+
+
+    // Fetch meals for each category
+    const meals = await Promise.all(
+        categoryMeals.map(async (category: string) => {
+            const res = await fetch(`https://www.themealdb.com/api/json/v1/1/filter.php?c=${category}`);
+            const data = await res.json();
+            return data.meals || []; // Return empty array if no meals
+        })
+    );
+
+
+    // Flatten and filter meals, making sure data exists
+    const paths = meals
+        .flat() // Flatten the nested arrays
+        .filter((meal) => meal?.idMeal) // Ensure only valid meals are included
+        .map((meal) => ({ params: { receipt: meal.idMeal } })); // Generate paths
+    return paths;
+}
+
+const { receipt } = Astro.params;
+const response = await fetch(
+    `https://www.themealdb.com/api/json/v1/1/lookup.php?i=${receipt}`,
+);
+const data = await response.json();
+
+interface MealReceipt {
+  idMeal: string;
+  strMeal: string;
+  strMealAlternate: string | null;
+  strCategory: string;
+  strArea: string;
+  strInstructions: string;
+  strMealThumb: string;
+  strTags: string | null;
+  strYoutube: string | null;
+  strSource: string | null;
+  strImageSource: string | null;
+  strCreativeCommonsConfirmed: string | null;
+  dateModified: string | null;
+  ingredients: { ingredient: string; measure: string }[];
+}
+
+function parseMeal(data: any): MealReceipt {
+  const ingredients: { ingredient: string; measure: string }[] = [];
+
+  for (let i = 1; i <= 20; i++) {
+    const ingredient = data[`strIngredient${i}`];
+    const measure = data[`strMeasure${i}`];
+    if (ingredient && ingredient.trim()) {
+      ingredients.push({ ingredient, measure: measure || "" });
+    }
+  }
+
+  return {
+    idMeal: data.idMeal,
+    strMeal: data.strMeal,
+    strMealAlternate: data.strMealAlternate || null,
+    strCategory: data.strCategory,
+    strArea: data.strArea,
+    strInstructions: data.strInstructions,
+    strMealThumb: data.strMealThumb,
+    strTags: data.strTags || null,
+    strYoutube: data.strYoutube || null,
+    strSource: data.strSource || null,
+    strImageSource: data.strImageSource || null,
+    strCreativeCommonsConfirmed: data.strCreativeCommonsConfirmed || null,
+    dateModified: data.dateModified || null,
+    ingredients,
+  };
+}
+
+
+const meal: MealReceipt = parseMeal(data.meals[0]);
+
+---
+
+<Layout title="Tasty Venus">
+    <div>
+        <h1 class="text-3xl font-bold text-center pt-10">
+            {meal.strMeal}
+        </h1>
+        <Back />
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6 p-5">
+            <div>
+
+                <p class="text-justify pl-10">
+                    {meal.strInstructions}
+                </p>
+                <br>
+                <ul class="pl-10">
+                    {meal.ingredients.map((ig)=><li>{ig.measure} of {ig.ingredient}</li>)}
+                </ul>
+            </div>
+            <div>
+                <img src={meal.strMealThumb} alt="">
+            </div>
+        </div>
+        {data.meals?.length > 11 ? <Back /> : null}
+    </div>
+</Layout>
